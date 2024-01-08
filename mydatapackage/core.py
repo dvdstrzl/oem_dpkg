@@ -51,9 +51,8 @@ def create_datapackage(input_folder, name, description, version):
 
 
     # Save the Datapackage
-    output_path = "output/datapackage.json"
+    output_path = "datapackage.json"
     datapackage.to_json(output_path)
-    datapackage.to_zip("output/datapackage.zip")
 
     print(f"Datapackage wurde unter {output_path} erstellt.")
 
