@@ -14,22 +14,6 @@ from oem2orm import oep_oedialect_oem2orm as oem2orm
 
 
 class OEPDataHandler:
-    # def __init__(self, metadata_dir, csv_file_path, table_name, schema='model_draft'):
-    #     self.metadata_dir = metadata_dir
-    #     self.csv_file_path = csv_file_path
-    #     self.table_name = table_name
-    #     self.schema = schema
-    #     self.db = None
-    #     if "OEP_TOKEN" not in os.environ:
-    #         os.environ["OEP_TOKEN"] = getpass.getpass('Enter API-Token:')
-
-    #  (TEST mit datapackage und csv)
-    # def __init__(self, datapackage, dataset_name, schema='model_draft'):
-    #     self.schema = schema
-    #     self.db = None
-    #     self.load_datapackage(datapackage, dataset_name)
-    #     if "OEP_TOKEN" not in os.environ:
-    #         os.environ["OEP_TOKEN"] = getpass.getpass('Enter API-Token:')
     def __init__(self, datapackage_json:str, dataset_names:list, api_token:str, oep_username:str, schema="model_draft"):
         self.datapackage_json = datapackage_json
         self.dataset_names = dataset_names
@@ -120,7 +104,7 @@ class OEPDataHandler:
                     -1
                 ]  # Angenommen, der Tabellenname folgt nach dem letzten Punkt
                 cli.insert_into_table(table_name, data_to_insert)
-                self.set_metadata(resource.custom["oem"], table_name)
+                self.update_oep_metadata(resource.custom["oem"], table_name)
 
     # def create_sql_tables_from_metadata(self):
     #     metadata_folder = oem2orm.select_oem_dir(oem_folder_name=self.resource_dir, filename="metadata.json")
@@ -179,7 +163,7 @@ class OEPDataHandler:
     #     cli = OepClient(token=os.environ["OEP_TOKEN"], default_schema=self.schema)
     #     cli.set_metadata(self.table_name, metadata)
 
-    def set_metadata(self, metadata_file, table_name):
+    def update_oep_metadata(self, metadata_file, table_name):
         metadata_file = Path(self.datapackage_basepath) / Path(metadata_file)
         with open(metadata_file) as json_file:
             metadata = json.load(json_file)
@@ -189,18 +173,8 @@ class OEPDataHandler:
     def run_all(self):
         self.setup_logger()
         self.setup_db_connection()
-        # self.create_sql_tables_from_metadata()
         self.upload_data()
-        # self.set_metadata(self.dataset_oem)
 
-
-# # Beispiel für die Verwendung:
-# oep_oem_handler = OEPDataHandler(
-#     metadata_dir="input/testfiles/renewables.ninja_feedin",
-#     csv_file_path="input/testfiles/renewables.ninja_feedin/pv_feedin_timeseries.csv",
-#     table_name="pv_feedin_timeseries"
-# )
-# oep_oem_handler.run_all()
 
 # Beispiel für die Verwendung (TEST mit datapackage)
 oep_oem_handler = OEPDataHandler(

@@ -1,10 +1,15 @@
 from datetime import datetime
+import os
 import shutil
 from frictionless import Package, Resource
 from pathlib import Path
 import json
 import fiona
 from utils import find_metadata_json_files, find_dataset_paths, get_crs_from_gpkg, get_folder_name
+from omi.dialects.oep.parser import JSONParser
+
+from metadata.v150.schema import OEMETADATA_V150_SCHEMA
+from metadata.latest.schema import OEMETADATA_LATEST_SCHEMA
 
 class CustomPackage:
     def __init__(self, input_path, output_path, name, description, version, oem=True):
@@ -14,7 +19,11 @@ class CustomPackage:
         self.description = description
         self.version = version
         self.oem = oem
+        self.oem_schema = OEMETADATA_LATEST_SCHEMA
         self.resources = []
+        self.oem_validity_reports_path = Path(output_path) / 'oem_validity_reports '
+        if self.oem_validity_reports_path.exists():
+            shutil.rmtree(self.oem_validity_reports_path)
 
     def create(self):
         self.output_path.mkdir(parents=True, exist_ok=True)
@@ -82,25 +91,53 @@ class CustomPackage:
     #     else:
     #         print(f"No OEM (metadata.json) found for '{get_folder_name(resource.path)}'!")
 
+
+    # ------ "metadata-files" als liste ist doch hier irgendwie nicht optimal? 
+    #              wird ja nur auf eine zugegriffen... geht wohl eleganter
     def attach_oem_metadata(self, resource, file_path):
         metadata_files = find_metadata_json_files(Path(file_path).parent)
         if resource.name != "metadata":
             if metadata_files:
-                resource.custom["oem"] = str(metadata_files[0])
+                if self.validate_oem(str(metadata_files[0]), self.oem_schema):
+                    resource.custom["oem"] = str(metadata_files[0])
             else:
                 resource.custom["oem"] = ""
-                print(f"No OEM (metadata.json) found for '{get_folder_name(resource.path)}'!")
+                print(f"MISSING OEMetadata for '{file_path}'!")
+    
+    def validate_oem(self, oem, oem_schema):
+        with open(oem, "r", encoding="utf-8") as f:
+            oem_loaded = json.load(f)
+
+        parser = JSONParser()
+        schema = oem_schema
+
+        report = parser.validate(oem_loaded, schema, save_report=False)
+
+        # Erstelle den Report-Ordner, falls nicht vorhanden
+        if report:
+            self.oem_validity_reports_path.mkdir(parents=True, exist_ok=True)
+            oem_report_filename = f"{self.oem_validity_reports_path}/oem_report.{get_folder_name(oem)}.json"
+            if not Path(oem_report_filename).exists():
+                with open(oem_report_filename, "w", encoding="utf-8") as fp:
+                    json.dump(report, fp, indent=4, sort_keys=False)
+                print(f"OEMetadata for dataset '{get_folder_name(oem)}' does not fully comply with '{schema['description']}'! Details in the report: '{oem_report_filename}'")
 
     def create_package(self):
-        package = Package(
+        try:
+            package = Package(
             basepath=self.output_path,
             name=self.name,
             description=self.description,
             version=self.version,
             resources=self.resources
-        )
-        self.make_paths_relative(package, self.output_path)
-        package.to_json(str(self.output_path / 'datapackage.json'))
+        )            
+            self.make_paths_relative(package, self.output_path)
+            package.to_json(str(self.output_path / 'datapackage.json'))
+            print(f"Datapackage successfully created: '{self.output_path}'")
+        except Exception as e:
+            print(f"Could not create datapackage! Error: {e}")
+
+            
 
 
 # # Beispielaufruf
