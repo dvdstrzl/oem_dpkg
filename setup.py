@@ -12,8 +12,8 @@ if os.path.isfile(requirement_path):
         install_requires = f.read().splitlines()
 
 setup(
-    name="mydatapackage",
-    version="0.1.0",
+    name="MyDataPackage",
+    version="0.9",
     author="David Starzl",
     author_email="davidstarzl@posteo.net",
     description="Currently no description.",
@@ -22,5 +22,10 @@ setup(
     url="https://github.com/dvdstrzl/ba_datapackage",
     packages=find_packages(),
     install_requires=install_requires,
-    python_requires=">=3.8",
+    python_requires=">=3.10",
+    entry_points={
+        'console_scripts': [
+            'mydp-cli=cli.commands:cli',
+        ],
+    },
 )
