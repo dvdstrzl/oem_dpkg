@@ -149,6 +149,6 @@ class CustomPackage:
 
 # # Beispielaufruf
 input_path = "IGNORE/testing/input/pipefiles/raw"
-output_path = "output/CLI_TEST/"
+output_path = "output/TEST/"
 package = CustomPackage(input_path, output_path, name="unique-identifier", description="Datapackage Description", version="0.9", oem=True)
 package.create()
