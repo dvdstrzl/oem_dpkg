@@ -8,7 +8,7 @@ import fiona
 from utils import find_metadata_json_files, find_dataset_paths, get_crs_from_gpkg, get_folder_name
 from omi.dialects.oep.parser import JSONParser
 
-from metadata.v150.schema import OEMETADATA_V150_SCHEMA
+# from metadata.v150.schema import OEMETADATA_V150_SCHEMA
 from metadata.latest.schema import OEMETADATA_LATEST_SCHEMA
 
 class CustomPackage:
@@ -98,10 +98,14 @@ class CustomPackage:
         metadata_files = find_metadata_json_files(Path(file_path).parent)
         if resource.name != "metadata":
             if metadata_files:
+                resource.custom["oem"] = str(metadata_files[0])
                 if self.validate_oem(str(metadata_files[0]), self.oem_schema):
-                    resource.custom["oem"] = str(metadata_files[0])
+                    resource.custom["oem_validity"] = self.oem_schema['description']
+                else:
+                    resource.custom["oem_validity"] = "INVALID"
             else:
                 resource.custom["oem"] = ""
+                resource.custom["oem_validity"] = ""
                 print(f"MISSING OEMetadata for '{file_path}'!")
     
     def validate_oem(self, oem, oem_schema):
@@ -121,6 +125,9 @@ class CustomPackage:
                 with open(oem_report_filename, "w", encoding="utf-8") as fp:
                     json.dump(report, fp, indent=4, sort_keys=False)
                 print(f"OEMetadata for dataset '{get_folder_name(oem)}' does not fully comply with '{schema['description']}'! Details in the report: '{oem_report_filename}'")
+            return False
+        else:
+            return True
 
     def create_package(self):
         try:
@@ -142,6 +149,6 @@ class CustomPackage:
 
 # # Beispielaufruf
 input_path = "IGNORE/testing/input/pipefiles/raw"
-output_path = "output/CLI/"
+output_path = "output/CLI_TEST/"
 package = CustomPackage(input_path, output_path, name="unique-identifier", description="Datapackage Description", version="0.9", oem=True)
 package.create()
