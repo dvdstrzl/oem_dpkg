@@ -1,7 +1,11 @@
 import os
 from pathlib import Path
+from typing import Any, Dict, List
 import fiona
 import json
+
+import pandas as pd
+import geopandas as gpd
 
 def get_folder_name(file_path):
     return Path(file_path).parent.name
@@ -71,5 +75,27 @@ def find_dataset_paths(start_path):
         if os.path.exists(start_path) and not start_path.endswith(".gitkeep") and start_path != 'datapackage.json':
             file_paths.append(start_path)
     return file_paths
+
+
+# Utils for OEP Data Handler
+
+def prepare_csv_data(resource_abs_path: Path) -> List[Dict[str, Any]]:
+    df = pd.read_csv(resource_abs_path, encoding="utf8", sep=",", dtype={"RS": "str"})
+    df.columns = map(str.lower, df.columns)
+    return json.loads(df.to_json(orient="records"))
+
+def prepare_json_data(resource_abs_path: Path) -> Dict[str, Any]:
+    with open(resource_abs_path) as json_data:
+        return json.load(json_data)
+
+def prepare_gpkg_data(resource_abs_path: Path) -> List[Dict[str, Any]]:
+    gdf = gpd.read_file(resource_abs_path)
+    records = []
+    for _, row in gdf.iterrows():
+        record = row.to_dict()
+        if 'geometry' in record and record['geometry'] is not None:
+            record['geometry'] = record['geometry'].wkt
+        records.append(record)
+    return records
 
 
