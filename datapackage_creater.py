@@ -21,7 +21,7 @@ class CustomPackage:
         self.oem = oem
         self.oem_schema = OEMETADATA_LATEST_SCHEMA
         self.resources = []
-        self.oem_validity_reports_path = Path(output_path) / 'oem_validity_reports '
+        self.oem_validity_reports_path = Path(output_path) / 'oem_validity_reports'
         if self.oem_validity_reports_path.exists():
             shutil.rmtree(self.oem_validity_reports_path)
 
@@ -105,7 +105,7 @@ class CustomPackage:
                     resource.custom["oem_validity"] = "INVALID"
             else:
                 resource.custom["oem"] = ""
-                resource.custom["oem_validity"] = ""
+                resource.custom["oem_validated"] = ""
                 print(f"MISSING OEMetadata for '{file_path}'!")
     
     def validate_oem(self, oem, oem_schema):
@@ -120,11 +120,11 @@ class CustomPackage:
         # Erstelle den Report-Ordner, falls nicht vorhanden
         if report:
             self.oem_validity_reports_path.mkdir(parents=True, exist_ok=True)
-            oem_report_filename = f"{self.oem_validity_reports_path}/oem_report.{get_folder_name(oem)}.json"
+            oem_report_filename = f"{self.oem_validity_reports_path}/oem_validity_report.{get_folder_name(oem)}.json"
             if not Path(oem_report_filename).exists():
                 with open(oem_report_filename, "w", encoding="utf-8") as fp:
                     json.dump(report, fp, indent=4, sort_keys=False)
-                print(f"OEMetadata for dataset '{get_folder_name(oem)}' does not fully comply with '{schema['description']}'! Details in the report: '{oem_report_filename}'")
+                print(f"\nINFO:\nOEMetadata for dataset '{get_folder_name(oem)}' does not fully comply with '{schema['description']}'... \nCheck validity report: '{oem_report_filename}'")
             return False
         else:
             return True
@@ -140,7 +140,7 @@ class CustomPackage:
         )            
             self.make_paths_relative(package, self.output_path)
             package.to_json(str(self.output_path / 'datapackage.json'))
-            print(f"Datapackage successfully created: '{self.output_path}'")
+            print(f"\nDatapackage successfully created: '{self.output_path}/'")
         except Exception as e:
             print(f"Could not create datapackage! Error: {e}")
 
@@ -148,7 +148,7 @@ class CustomPackage:
 
 
 # # Beispielaufruf
-input_path = "IGNORE/testing/input/pipefiles/raw"
-output_path = "output/TEST/"
+input_path = "IGNORE/latest_test_path"
+output_path = "output/LATEST/"
 package = CustomPackage(input_path, output_path, name="unique-identifier", description="Datapackage Description", version="0.9", oem=True)
 package.create()

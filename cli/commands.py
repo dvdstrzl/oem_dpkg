@@ -25,7 +25,7 @@ def cli():
 @click.option('--schema', default='model_draft', help='Schema to use in the OEP database.')
 def oep_upload(datapackage_path, dataset_name, schema):
     """Uploads data to the OEP database for a given dataset."""
-    handler = OEPDataHandler(datapackage_path=datapackage_path, dataset_name=dataset_name, schema=schema)
+    handler = OEPDataHandler(datapackage_path=datapackage_path, dataset_name=dataset_name, oep_schema=schema)
     handler.run_all()
     click.echo(f"Uploaded dataset '{dataset_name}' to OEP database successfully.")
 
