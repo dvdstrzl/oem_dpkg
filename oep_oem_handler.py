@@ -1,3 +1,4 @@
+import re
 from typing import List, Optional, Dict, Any, Union
 import logging
 import os
@@ -6,6 +7,7 @@ from frictionless import Package, Resource
 import pandas as pd
 import geopandas as gpd
 import getpass
+import sqlalchemy as sa
 import json
 import requests as req
 from oep_client import OepClient
@@ -13,10 +15,9 @@ from oem2orm import oep_oedialect_oem2orm as oem2orm
 from tqdm import tqdm
 from utils import prepare_csv_data, prepare_gpkg_data, prepare_json_data
 
-
-# - [ ] Errror handling... z.b. wenn Upload fehlschlägt --> info, und OPTION: Abbruch? (y/n)
-# - [ ] Funktionen unbedingt besser gestalten (v.a. REDUNDANZEN verringern!)
-# - [ ] Api-Connection headers auslagern (z.b. config)
+# - [ ] CONFIG auslagern (config.yaml): Api-Connection headers
+# - [ ] Umfangreiches Errror handling... z.b. wenn Upload fehlschlägt --> info, und OPTION? Abbruch (y/n)
+# - [ ] Funktionen besser gestalten (z.b. Struktur/Logik, REDUNDANZEN verringern!)
 
 
 class OEPDataHandler:
@@ -42,7 +43,7 @@ class OEPDataHandler:
             os.environ["OEP_USER"] = oep_username
         self.resources: List[Resource] = []
         self.oem_paths: List[str] = []
-        self.extract_dataset_resources(self.datapackage, self.dataset_selection)
+        self.resources_ignore_list: List[str] = []
 
     def extract_dataset_resources(
         self, datapackage: Package, datasets: Optional[List[str]]
@@ -68,14 +69,12 @@ class OEPDataHandler:
                     f"No OEM found for '{', '.join(datasets)}' within the data package."
                 )
         else:
-            # Add all resources if no dataset selection is provided, except those ending with '.metadata'
+            # Add all resources if no dataset selection is provided
             for resource in datapackage.resources:
                 if not resource.name.endswith(".oem"):
                     self.resources.append(resource)
                 else:
-                    self.oem_resources.append(resource)
-        for resource in self.resources:
-            print(resource.name)
+                    self.oem_paths.append(resource.path)
 
     def setup_logger(self):
         oem2orm.setup_logger()
@@ -83,72 +82,136 @@ class OEPDataHandler:
     def setup_db_connection(self):
         self.db = oem2orm.setup_db_connection()
 
+    #################### TEST: BATCHING UPLOAD! 
     def upload_data_to_table(
         self,
         table_name: str,
-        data: Union[List[Dict[str, Any]], Dict[str, Any]],
+        data: List[Dict[str, Any]],
         auth_headers: Dict[str, str],
+        batch_size: int = 1000
     ) -> None:
-        res = req.post(
-            f"https://openenergy-platform.org/api/v0/schema/model_draft/tables/{table_name}/rows/new",
-            json={"query": data},
-            headers=auth_headers,
-        )
-        if not res.ok:
-            raise Exception(res.raise_for_status)
+        for i in range(0, len(data), batch_size):
+            batch = data[i:i+batch_size]
+            try:
+                res = req.post(
+                    f"https://openenergy-platform.org/api/v0/schema/model_draft/tables/{table_name}/rows/new",
+                    json={"query": batch},
+                    headers=auth_headers,
+                )
+                res.raise_for_status()
+            except req.exceptions.RequestException as e:
+                logging.error(f"An error occurred during batch upload: {e}")
+                raise
 
-    def upload_data(self):
+    def upload_datasets(self):
         auth_headers = {"Authorization": f"Token {os.environ.get('OEP_TOKEN')}"}
+        batch_size = 3000  # Definieren Sie die Größe jedes Batches
         progress_bar = tqdm(total=len(self.resources))
-        for resource in self.resources:
-            progress_bar.set_description(f"Uploading {resource.name}")
-            table_name = resource.name.split(".")[-1]
-            resource_abs_path = Path(self.datapackage.basepath) / Path(resource.path)
 
-            if resource.format == "csv":
-                data_to_insert = prepare_csv_data(resource_abs_path)
-            elif resource.format == "json":
-                data_to_insert = prepare_json_data(resource_abs_path)
-            elif resource.format == "gpkg":
-                data_to_insert = prepare_gpkg_data(resource_abs_path)
-            else:
-                continue  # Falls das Format nicht unterstützt wird, überspringen
+        try:
+            for resource in self.resources:
+                progress_bar.set_description(f"Now uploading '{resource.name}' | Total Progress")
+                table_name = resource.name.split(".")[-1]
+                resource_abs_path = Path(self.datapackage.basepath) / Path(resource.path)
 
-            self.upload_data_to_table(table_name, data_to_insert, auth_headers)
-            progress_bar.update(1)
-        progress_bar.close()
+                if resource.format == "csv":
+                    data_to_insert = prepare_csv_data(resource_abs_path)
+                elif resource.format == "json":
+                    data_to_insert = prepare_json_data(resource_abs_path)
+                elif resource.format == "gpkg":
+                    data_to_insert = prepare_gpkg_data(resource_abs_path)
+                else:
+                    logging.warning(f"'{resource.name}': Format not supported ('{resource.format}').")
+                    continue
 
-    def gpkg_to_json(self, gpkg_path: Path) -> List[Dict[str, Any]]:
-        # Lade die GeoPackage-Daten
-        gdf = gpd.read_file(gpkg_path)
+                self.upload_data_to_table(table_name, data_to_insert, auth_headers, batch_size)
+                self.update_oep_metadata(resource.custom["oem_path"], table_name)
+                progress_bar.update(1)
+        except Exception as e:
+            logging.error("Failed to upload data!", exc_info=e)
+        finally:
+            progress_bar.set_description("Upload completed")
+            progress_bar.close()
 
-        # Bereite die Daten für das JSON-Format vor
-        records = []
-        for _, row in gdf.iterrows():
-            # Erstelle ein Dictionary für jede Zeile
-            record = row.to_dict()
+    # def upload_data_to_table(
+    #     self,
+    #     table_name: str,
+    #     data: Union[List[Dict[str, Any]], Dict[str, Any]],
+    #     auth_headers: Dict[str, str],
+    # ) -> None:
+    #     try:
+    #         res = req.post(
+    #             f"https://openenergy-platform.org/api/v0/schema/model_draft/tables/{table_name}/rows/new",
+    #             json={"query": data},
+    #             headers=auth_headers,
+    #         )
+    #         res.raise_for_status()
+    #     except req.exceptions.JSONDecodeError as json_err:
+    #         logging.error(f"JSONDecode error: {json_err}")
+    #         raise
+    #     except req.exceptions.HTTPError as http_err:
+    #         logging.error(f"HTTP error: {http_err}")
+    #         raise
+    #     except req.exceptions.Timeout as timeout_err:
+    #         logging.error(f"Timeout occurred: {timeout_err}")
+    #         raise
+    #     except req.exceptions.ConnectionError as con_err:
+    #         logging.error(f"Connection error: {con_err}")
+    #         raise
+    #     except req.exceptions.RequestException as e:
+    #         logging.error(f"An error occurred: {e}")
+    #         raise
 
-            # Transformiere Geometriedaten in WKT, wenn vorhanden
-            if "geometry" in record and record["geometry"] is not None:
-                record["geometry"] = record["geometry"].wkt
+    # def upload_datasets(self):
+    #     auth_headers = {"Authorization": f"Token {os.environ.get('OEP_TOKEN')}"}
+    #     progress_bar = tqdm(total=len(self.resources))
+    #     try:
+    #         for resource in self.resources:
+    #             progress_bar.set_description(
+    #                 f"Now uploading '{resource.name}' | Total Progress"
+    #             )
+    #             table_name = resource.name.split(".")[-1]
+    #             resource_abs_path = Path(self.datapackage.basepath) / Path(
+    #                 resource.path
+    #             )
+    #             if table_name in self.resources_ignore_list:
+    #                 progress_bar.total = progress_bar.total - 1
+    #             else:
+    #                 if resource.format == "csv":
+    #                     data_to_insert = prepare_csv_data(resource_abs_path)
+    #                 elif resource.format == "json":
+    #                     data_to_insert = prepare_json_data(resource_abs_path)
+    #                 elif resource.format == "gpkg":
+    #                     data_to_insert = prepare_gpkg_data(resource_abs_path)
+    #                 else:
+    #                     logging.warning(
+    #                         f"'{resource.name}': Format not supported ('{resource.format}')."
+    #                     )
+    #                     continue
 
-            records.append(record)
+    #                 self.upload_data_to_table(table_name, data_to_insert, auth_headers)
+    #                 self.update_oep_metadata(resource.custom["oem_path"], table_name)
+    #                 progress_bar.update(1)
 
-        # Speichere die Daten im JSON-Format
-        return records
+    #     except Exception as e:
+    #         logging.error("Failed to upload data! ", exc_info=e)
+    #     finally:
+    #         progress_bar.set_description("Upload completed")
+    #         progress_bar.close()
 
-    def create_oep_tables(self, datapackage_path, resources):
+
+    def create_oep_tables(self, datapackage_path):
         # NUR FÜR DEV-VERSION (TESTING) --------------------------------------------------------------!
         # ...Bestehende Tables ENTFERNEN:
-        for resource in resources:
-            table_name = resource.name.split(".")[-1]
-            table_api_url = f"https://openenergy-platform.org/api/v0/schema/model_draft/tables/{table_name}/"
-            req.delete(
-                table_api_url,
-                headers={"Authorization": f"Token {os.environ.get('OEP_TOKEN')}"},
-            )
-            print(f"Deleted existing table on OEP for {resource.name}")
-        # -----------------------------------------------------------------------------
+        # for resource in resources:
+        #     table_name = resource.name.split(".")[-1]
+        #     table_api_url = f"https://openenergy-platform.org/api/v0/schema/model_draft/tables/{table_name}/"
+        #     req.delete(
+        #         table_api_url,
+        #         headers={"Authorization": f"Token {os.environ.get('OEP_TOKEN')}"},
+        #     )
+        #     logging.info(f"Deleted existing table on OEP for {resource.name}")
+        # # -----------------------------------------------------------------------------
         base_path = Path(
             datapackage_path
         ).parent  # Erhalte den Pfad bis zum Datapackage-Ordner
@@ -157,44 +220,91 @@ class OEPDataHandler:
                 base_path / oem_resource
             )  # Erstelle den vollen Pfad zum OEM-Ordner
             tables_orm = self.extract_tables_from_oem(self.db, full_oem_path)
-            oem2orm.create_tables(self.db, tables_orm)
+            existing_tables = []
+            for table in tables_orm:
+                if self.db.engine.dialect.has_table(
+                    self.db.engine, table.name, schema=table.schema
+                ):
+                    table_warning = input(
+                        f"Table '{table.name} - {self.oep_schema}' already exists on OEP. Do you want to OVERWRITE it? [Yes] or [No]\n>>> "
+                    )
+                    if re.fullmatch("[Nn]o", table_warning):
+                        existing_tables.append(table)
+                        self.resources_ignore_list.append(table.name)
+            for table in existing_tables:
+                tables_orm.remove(table)
+            try:
+                oem2orm.create_tables(self.db, tables_orm)
+            except Exception as e:
+                logging.error(f"Could not create tables on OEP.\nError: {e}")
+                raise
 
-    def extract_tables_from_oem(self, db, oem_file_path):
+    def extract_tables_from_oem(self, db, oem_file_path) -> List[sa.Table]:
         tables = []
         if oem_file_path.exists():
             try:
                 md_tables = oem2orm.create_tables_from_metadata_file(
                     db, str(oem_file_path)
                 )
-                logging.info(f"Created tables from: {oem_file_path}")
                 tables.extend(md_tables)
             except Exception as e:
-                logging.error(f'Could not create tables from OEM: "{oem_file_path}"')
-                raise e
+                logging.error(
+                    f"Could not create tables from OEM: '{oem_file_path}'\nError: {e}"
+                )
+                raise
         else:
             logging.warning(f"Metadata file not found in: {oem_file_path}")
         return oem2orm.order_tables_by_foreign_keys(tables)
 
-    def update_oep_metadata(self, metadata_file, table_name):
-        metadata_file = Path(self.datapackage.basepath) / Path(metadata_file)
-        with open(metadata_file) as json_file:
+    def update_oep_metadata(self, oem_path: str, table_name: str) -> None:
+        """
+        Updates the metadata on the OEP platform for a specific table.
+        It also modifies the metadata to keep only the specified resource respectively.
+
+        Parameters:
+        - oem_path (str): The relative path to the metadata JSON file.
+        - table_name (str): The name of the table for which to update the metadata, which also matches the resource name to keep.
+
+        This function modifies the metadata in-memory to only include the resource matching the table_name before uploading.
+        """
+        # Construct the full path to the metadata file
+        oem_path = Path(self.datapackage.basepath) / Path(oem_path)
+        with open(oem_path) as json_file:
             metadata = json.load(json_file)
+
+        # Filter the resources to keep only the one matching the table_name
+        filtered_resources = [
+            resource
+            for resource in metadata.get("resources", [])
+            if resource.get("name") == table_name
+        ]
+
+        if not filtered_resources:
+            raise ValueError(
+                f"No matching resource found for table '{table_name}' in the metadata."
+            )
+
+        # Replace the original resources list with the filtered one
+        metadata["resources"] = filtered_resources
+
+        # Update the metadata on the OEP platform
         cli = OepClient(token=os.environ["OEP_TOKEN"], default_schema=self.oep_schema)
         cli.set_metadata(table_name, metadata)
 
     def run_all(self):
         self.setup_logger()
         self.setup_db_connection()
-        self.create_oep_tables(self.datapackage_json, self.resources)
-        self.upload_data()
+        self.extract_dataset_resources(self.datapackage, self.dataset_selection)
+        self.create_oep_tables(self.datapackage_json)
+        self.upload_datasets()
 
 
 # ------------------------------------------------------------------------------
 # Beispiel für die Verwendung (TEST mit datapackage)
 oep_oem_handler = OEPDataHandler(
     datapackage_json="output/LATEST/datapackage/datapackage.json",
-    # dataset_selection=["rpg_abw_regional_plan", "renewables_ninja_feedin"],
-    dataset_selection=["renewables_ninja_feedin"],
+    # dataset_selection=["rpg_abw_regional_plan"],
+    # dataset_selection=["renewables_ninja_feedin"],
     api_token="0c9889067a4eafa692e433de3ea67acca51510ec",
     oep_username="davidst",
 )
