@@ -105,15 +105,14 @@ class OEPDataHandler:
 
     def upload_datasets(self):
         auth_headers = {"Authorization": f"Token {os.environ.get('OEP_TOKEN')}"}
-        batch_size = 3000  # Definieren Sie die Größe jedes Batches
-        progress_bar = tqdm(total=len(self.resources))
+        batch_size = 3000  # Die Größe jedes Batches
 
-        try:
-            for resource in self.resources:
-                progress_bar.set_description(f"Now uploading '{resource.name}' | Total Progress")
-                table_name = resource.name.split(".")[-1]
-                resource_abs_path = Path(self.datapackage.basepath) / Path(resource.path)
+        for resource in self.resources:
+            table_name = resource.name.split(".")[-1]
+            resource_abs_path = Path(self.datapackage.basepath) / Path(resource.path)
 
+            # Entscheide das Format und bereite die Daten vor
+            if table_name not in self.resources_ignore_list:
                 if resource.format == "csv":
                     data_to_insert = prepare_csv_data(resource_abs_path)
                 elif resource.format == "json":
@@ -124,14 +123,18 @@ class OEPDataHandler:
                     logging.warning(f"'{resource.name}': Format not supported ('{resource.format}').")
                     continue
 
-                self.upload_data_to_table(table_name, data_to_insert, auth_headers, batch_size)
+                # Erstelle eine ProgressBar für jedes Resource
+                total_size = len(data_to_insert)
+                with tqdm(total=total_size, desc=f"Uploading '{resource.name}'", unit='rows', leave=True) as pbar:
+                    for i in range(0, total_size, batch_size):
+                        batch = data_to_insert[i:i+batch_size]
+                        try:
+                            self.upload_data_to_table(table_name, batch, auth_headers, batch_size)
+                            pbar.update(len(batch))  # Aktualisiere ProgressBar basierend auf der tatsächlichen Batch-Größe
+                        except Exception as e:
+                            logging.error(f"Failed to upload batch for {resource.name}. Error: {e}")
+                            # Hier könnten Sie entscheiden, ob Sie den Vorgang abbrechen oder versuchen, den Batch erneut hochzuladen.
                 self.update_oep_metadata(resource.custom["oem_path"], table_name)
-                progress_bar.update(1)
-        except Exception as e:
-            logging.error("Failed to upload data!", exc_info=e)
-        finally:
-            progress_bar.set_description("Upload completed")
-            progress_bar.close()
 
     # def upload_data_to_table(
     #     self,
