@@ -12,11 +12,11 @@ if os.path.isfile(requirement_path):
         install_requires = f.read().splitlines()
 
 setup(
-    name="MyDataPackage",
-    version="0.9",
+    name="CustomDataPackage",
+    version="1.0",
     author="David Starzl",
     author_email="davidstarzl@posteo.net",
-    description="Currently no description.",
+    description="",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/dvdstrzl/ba_datapackage",

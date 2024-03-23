@@ -83,7 +83,7 @@ def find_metadata_json_files(start_path: str) -> List[str]:
 
 def get_metadata_from_gpkg(gpkg_path: str) -> Dict[str, Any]:
     """
-    Extracts and returns the Coordinate Reference System (CRS), geometry type, 
+    Extracts and returns the Coordinate Reference System (CRS), geometry type,
     and bounding box from a GeoPackage file.
 
     Parameters:
@@ -96,18 +96,52 @@ def get_metadata_from_gpkg(gpkg_path: str) -> Dict[str, Any]:
         # Extract CRS
         crs = src.crs
         # Extract geometry type
-        geometry_type = src.schema['geometry']
+        geometry_type = src.schema["geometry"]
         # Extract bounding box
         bbox = src.bounds
         # Extract schema information (fields and their data types)
-        fields = [{"name": field[0], "type": field[1]} for field in src.schema['properties'].items()]
+        fields = [
+            {"name": field[0], "type": convert_dtype_to_frictionless_type(field[1])}
+            for field in src.schema["properties"].items()
+        ]
 
         return {
             "crs": crs,
             "geometry_type": geometry_type,
             "bounding_box": bbox,
-            "schema": {"fields":fields}
+            "schema": {"fields": fields},
         }
+
+
+def convert_dtype_to_frictionless_type(dtype: str) -> str:
+    """
+    Converts GDAL/OGR data types to Frictionless Field types.
+
+    Parameters:
+    - dtype (str): The data type returned by GDAL/OGR.
+
+    Returns:
+    - str: The corresponding Frictionless Field type.
+    """
+    type_mapping = {
+        "int": "integer",
+        "integer": "integer",
+        "str": "string",
+        "string": "string",
+        "text": "string",
+        "float": "number",
+        "real": "number",
+        "double": "number",
+        "date": "date",
+        "datetime": "datetime",
+        "time": "time",
+        "boolean": "boolean",
+        "bool": "boolean",
+        # Weitere Typen nach Bedarf hinzufügen
+    }
+    return type_mapping.get(
+        dtype.lower(), "string"
+    )  # Standardmäßig 'any' zurückgeben, falls Typ nicht gefunden wird
 
 
 def load_json(path: str) -> Any:

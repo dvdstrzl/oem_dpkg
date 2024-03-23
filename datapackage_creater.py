@@ -1,3 +1,4 @@
+import logging
 from typing import List, Union
 from pathlib import Path
 from frictionless import Package, Resource
@@ -16,7 +17,7 @@ from omi.dialects.oep.parser import JSONParser
 # from metadata.v160.schema import OEMETADATA_V160_SCHEMA
 from metadata.latest.schema import OEMETADATA_LATEST_SCHEMA
 
-
+logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
 class CustomPackage:
     def __init__(
         self,
@@ -145,17 +146,14 @@ class CustomPackage:
                 oem_file = str(metadata_files[0])
                 if self.validate_oem(oem_file, self.oem_schema):
                     resource.custom["oem_path"] = oem_file
-                    resource.custom["oem_schema_validity"] = self.oem_schema[
-                        "description"
-                    ]
+                    resource.custom["oem_schema_validity"] = self.oem_schema["description"]
                 else:
-                    resource.custom["oem_schema_validity"] = (
-                        "INVALID! Check report for details."
-                    )
+                    resource.custom["oem_schema_validity"] = "INVALID! Check report for details."
             else:
-                print(f"MISSING OEMetadata for '{file_path}'!")
+                logging.warning(f"MISSING OEMetadata for '{file_path}'!")
         else:
             resource.name = resource.name.replace("metadata", "oem")
+
 
     def validate_oem(self, oem: str, oem_schema: dict) -> bool:
         """
@@ -171,20 +169,17 @@ class CustomPackage:
         """
         with open(oem, "r", encoding="utf-8") as f:
             oem_loaded = json.load(f)
-
         parser = JSONParser()
         schema = oem_schema
-
         report = parser.validate(oem_loaded, schema, save_report=False)
-
         if report:
             self.oem_validity_reports_path.mkdir(parents=True, exist_ok=True)
             oem_report_filename = f"{self.oem_validity_reports_path}/oem_validity_report.{get_folder_name(oem)}.json"
             if not Path(oem_report_filename).exists():
                 with open(oem_report_filename, "w", encoding="utf-8") as fp:
                     json.dump(report, fp, indent=4, sort_keys=False)
-                print(
-                    f"\nINFO:\nOEMetadata for dataset '{get_folder_name(oem)}' does not fully comply with '{schema['description']}'... \nCheck validity report: '{oem_report_filename}'"
+                logging.info(
+                    f"OEMetadata for dataset '{get_folder_name(oem)}' does not fully comply with '{schema['description']}'... Check validity report: '{oem_report_filename}'"
                 )
             return False
         else:
@@ -209,21 +204,21 @@ class CustomPackage:
             )
             self.make_paths_relative(package, self.output_path)
             package.to_json(str(self.output_path / "datapackage.json"))
-            print(f"\nData package successfully created: '{self.output_path}/'")
+            logging.info(f"Data package successfully created @ '{self.output_path}/'")
         except Exception as e:
-            print(f"Could not create data package!\n{e}")
+            logging.error(f"Could not create data package!\n{e}")
 
 
 # -----------------------------------------
 # Beispielaufruf (TEST)
 input_path = "IGNORE/latest_test_path"
-output_path = "output/"
+output_path = "output/LATEST"
 package = CustomPackage(
     input_path,
     output_path,
     name="your-data-package",
     description="Describe your data package.",
     version="0.1",
-    oem=False,
+    oem=True,
 )
 package.create()
