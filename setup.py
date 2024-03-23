@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-import os 
+import os
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -24,8 +24,8 @@ setup(
     install_requires=install_requires,
     python_requires=">=3.8",
     entry_points={
-        'console_scripts': [
-            'mydp-cli=cli.commands:cli',
+        "console_scripts": [
+            "mydp-cli=cli.commands:cli",
         ],
     },
 )

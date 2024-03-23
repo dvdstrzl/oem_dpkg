@@ -82,16 +82,16 @@ class OEPDataHandler:
     def setup_db_connection(self):
         self.db = oem2orm.setup_db_connection()
 
-    #################### TEST: BATCHING UPLOAD! 
+    #################### TEST: BATCHING UPLOAD!
     def upload_data_to_table(
         self,
         table_name: str,
         data: List[Dict[str, Any]],
         auth_headers: Dict[str, str],
-        batch_size: int = 1000
+        batch_size: int = 1000,
     ) -> None:
         for i in range(0, len(data), batch_size):
-            batch = data[i:i+batch_size]
+            batch = data[i : i + batch_size]
             try:
                 res = req.post(
                     f"https://openenergy-platform.org/api/v0/schema/model_draft/tables/{table_name}/rows/new",
@@ -109,7 +109,9 @@ class OEPDataHandler:
 
         for resource in self.resources:
             table_name = resource.name.split(".")[-1]
-            resource_abs_path = Path(self.datapackage.basepath) / Path(resource.path)
+            resource_abs_path = Path(self.datapackage.basepath) / Path(
+                resource.path
+            )
 
             # Entscheide das Format und bereite die Daten vor
             if table_name not in self.resources_ignore_list:
@@ -120,21 +122,36 @@ class OEPDataHandler:
                 elif resource.format == "gpkg":
                     data_to_insert = prepare_gpkg_data(resource_abs_path)
                 else:
-                    logging.warning(f"'{resource.name}': Format not supported ('{resource.format}').")
+                    logging.warning(
+                        f"'{resource.name}': Format not supported ('{resource.format}')."
+                    )
                     continue
 
                 # Erstelle eine ProgressBar für jedes Resource
                 total_size = len(data_to_insert)
-                with tqdm(total=total_size, desc=f"Uploading '{resource.name}'", unit='rows', leave=True) as pbar:
+                with tqdm(
+                    total=total_size,
+                    desc=f"Uploading '{resource.name}'",
+                    unit="rows",
+                    leave=True,
+                ) as pbar:
                     for i in range(0, total_size, batch_size):
-                        batch = data_to_insert[i:i+batch_size]
+                        batch = data_to_insert[i : i + batch_size]
                         try:
-                            self.upload_data_to_table(table_name, batch, auth_headers, batch_size)
-                            pbar.update(len(batch))  # Aktualisiere ProgressBar basierend auf der tatsächlichen Batch-Größe
+                            self.upload_data_to_table(
+                                table_name, batch, auth_headers, batch_size
+                            )
+                            pbar.update(
+                                len(batch)
+                            )  # Aktualisiere ProgressBar basierend auf der tatsächlichen Batch-Größe
                         except Exception as e:
-                            logging.error(f"Failed to upload batch for {resource.name}. Error: {e}")
+                            logging.error(
+                                f"Failed to upload batch for {resource.name}. Error: {e}"
+                            )
                             # Hier könnten Sie entscheiden, ob Sie den Vorgang abbrechen oder versuchen, den Batch erneut hochzuladen.
-                self.update_oep_metadata(resource.custom["oem_path"], table_name)
+                self.update_oep_metadata(
+                    resource.custom["oem_path"], table_name
+                )
 
     # def upload_data_to_table(
     #     self,
@@ -201,7 +218,6 @@ class OEPDataHandler:
     #     finally:
     #         progress_bar.set_description("Upload completed")
     #         progress_bar.close()
-
 
     def create_oep_tables(self, datapackage_path):
         # NUR FÜR DEV-VERSION (TESTING) --------------------------------------------------------------!
@@ -291,7 +307,9 @@ class OEPDataHandler:
         metadata["resources"] = filtered_resources
 
         # Update the metadata on the OEP platform
-        cli = OepClient(token=os.environ["OEP_TOKEN"], default_schema=self.oep_schema)
+        cli = OepClient(
+            token=os.environ["OEP_TOKEN"], default_schema=self.oep_schema
+        )
         cli.set_metadata(table_name, metadata)
 
     def run_all(self):
