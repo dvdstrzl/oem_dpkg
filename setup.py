@@ -16,7 +16,7 @@ setup(
     version="1.0",
     author="David Starzl",
     author_email="davidstarzl@posteo.net",
-    description="",
+    description="A package for creating and uploading Frictionless Data Packages, incorporating standards of the Open Energy Metadata and OE Platform.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/dvdstrzl/ba_datapackage",
@@ -25,7 +25,7 @@ setup(
     python_requires=">=3.8",
     entry_points={
         "console_scripts": [
-            "oem_dpkg=cli:cli",
+            "oem_dpkg=oem_dpkg.cli:cli",
         ],
     },
 )
