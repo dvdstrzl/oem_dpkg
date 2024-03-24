@@ -16,7 +16,7 @@ This project provides tools for packaging and uploading datasets along with thei
 ### Contents
 
 - `oem_datapackage.py`: Defines the `OemDataPackage` class, which packages datasets and metadata into custom "OEM Data Package"
-- `oep_datahandler.py`: Implements the `OepUploadHandler` class for uploading datasets of an OEM Data Package to the OEP, including dataset and metadata.
+- `oep_uploadhandler.py`: Implements the `OepUploadHandler` class for uploading datasets of an OEM Data Package to the OEP, including dataset and metadata.
 - `cli.py`: Provides a Command Line Interface (CLI) to facilitate the use of `OemDataPackage` and `OepUploadHandler` functionalities.
 - `utils.py`: Contains utility functions that support data processing tasks across the project.
 - `requirements.txt`: Lists all the necessary Python packages required to run this project.
@@ -96,7 +96,7 @@ Before using `OepUploadHandler`, ensure you have:
 1. **Initialize**: To begin, instantiate the `OepUploadHandler` class with the path to your data package, your OEP API token, and other relevant information:
 
 ```python
-from oep_datahandler import OepUploadHandler
+from oep_uploadhandler import OepUploadHandler
 
 upload_handler = OepUploadHandler(
     datapackage_path="path/to/your/datapackage.json",

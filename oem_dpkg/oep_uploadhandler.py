@@ -11,7 +11,7 @@ import requests as req
 from oep_client import OepClient
 from oem2orm import oep_oedialect_oem2orm as oem2orm
 from tqdm import tqdm
-from utils import prepare_csv_data, prepare_gpkg_data, prepare_json_data
+from oem_dpkg.utils import prepare_csv_data, prepare_gpkg_data, prepare_json_data
 import oedialect
 
 logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)

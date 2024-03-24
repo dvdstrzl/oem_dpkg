@@ -6,7 +6,7 @@ from frictionless import Package, Resource
 from datetime import datetime, timezone
 import shutil
 import json
-from utils import (
+from oem_dpkg.utils import (
     find_metadata_json_files,
     find_dataset_paths,
     get_metadata_from_gpkg,

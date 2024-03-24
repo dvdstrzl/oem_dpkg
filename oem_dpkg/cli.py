@@ -1,6 +1,5 @@
 import click
-from oep_uploadhandler import OepUploadHandler
-from oem_datapackage import OemDataPackage
+from oem_dpkg import OepUploadHandler, OemDataPackage
 
 
 """
