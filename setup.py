@@ -12,7 +12,7 @@ if os.path.isfile(requirement_path):
         install_requires = f.read().splitlines()
 
 setup(
-    name="CustomDataPackage",
+    name="oem_datapkg",
     version="1.0",
     author="David Starzl",
     author_email="davidstarzl@posteo.net",
@@ -25,7 +25,7 @@ setup(
     python_requires=">=3.8",
     entry_points={
         "console_scripts": [
-            "mydp-cli=cli.commands:cli",
+            "oemdp=cli:cli",
         ],
     },
 )
