@@ -1,0 +1,340 @@
+{
+   "name": "rpg_abw_regional_plan",
+   "title": "Regionalplan Anhalt-Bitterfeld-Wittenberg",
+   "id": "rpg_abw_regional_plan",
+   "description": "Geodatensätze aus Teilplänen Wind 2018 und 2027 der Regionalen Planungsgemeinschaft Anhalt-Bitterfeld-Wittenberg.",
+   "subject": [],
+   "language": [
+      "de-DE"
+   ],
+   "keywords": [
+      "Geodatensätze",
+      "Teilpläne",
+      "PLanungsgemeinschaft"
+   ],
+   "publicationDate": "2018-05-30",
+   "context": {
+      "homepage": "https://abw.rl-institut.de",
+      "documentation": "https://digiplan.readthedocs.io",
+      "sourceCode": "https://github.com/rl-institut/apipe/",
+      "contact": "https://reiner-lemoine-institut.de/ueber-uns/kontakt/",
+      "grantNo": null,
+      "fundingAgency": "https://www.region-gestalten.bund.de",
+      "fundingAgencyLogo": "https://www.region-gestalten.bund.de/Region/SiteGlobals/Frontend/Images/logo.svg",
+      "publisherLogo": "https://reiner-lemoine-institut.de//wp-content/uploads/2015/09/rlilogo.png"
+   },
+   "spatial": {
+      "location": "ABW",
+      "extent": "ABW",
+      "resolution": null
+   },
+   "temporal": {
+      "referenceDate": "2023-03-03",
+      "timeseries": []
+   },
+   "sources": [
+      {
+         "title": "Regionalplan Anhalt-Bitterfeld-Wittenberg",
+         "description": "Geodatensätze aus Teilplänen Wind 2018 und 2027 der Regionalen Planungsgemeinschaft Anhalt-Bitterfeld-Wittenberg.",
+         "path": "https://www.planungsregion-abw.de/regionalplanung/teilplan-windenergie/teilplan-2018/",
+         "licenses": [
+            {
+               "instruction": "The data and meta-data provided may, for commercial and non-commercial use, in particular be copied, printed, presented, altered, processed and transmitted to third parties; be merged with own data and with the data of others and be combined to form new and independent datasets; be integrated in internal and external business processes, products and applications in public and non-public electronic networks.",
+               "attribution": "© Regionale Planungsgemeinschaft Anhalt-Bitterfeld-Wittenberg / Jahr",
+               "name": "DL-DE-BY-2.0",
+               "title": "Data licence Germany – attribution – version 2.0",
+               "path": "https://www.govdata.de/dl-de/by-2-0"
+            }
+         ]
+      }
+   ],
+   "licenses": [
+      {
+         "instruction": "The data and meta-data provided may, for commercial and non-commercial use, in particular be copied, printed, presented, altered, processed and transmitted to third parties; be merged with own data and with the data of others and be combined to form new and independent datasets; be integrated in internal and external business processes, products and applications in public and non-public electronic networks.",
+         "attribution": "© Regionale Planungsgemeinschaft Anhalt-Bitterfeld-Wittenberg / Jahr",
+         "name": "DL-DE-BY-2.0",
+         "title": "Data licence Germany – attribution – version 2.0",
+         "path": "https://www.govdata.de/dl-de/by-2-0"
+      }
+   ],
+   "contributors": [
+      {
+         "title": "aaronschilling",
+         "email": "Aaron.Schilling@rl-institut.de",
+         "object": "metadata",
+         "comment": "create metadata",
+         "date": "2023-09-07"
+      }
+   ],
+   "resources": [
+      {
+         "name": "stp_2027_ideen_repowering",
+         "path": "stp_2027_ideen_repowering.gpkg",
+         "format": "gpkg",
+         "encoding": "utf-8",
+         "schema": {
+            "primaryKey": [
+               "id"
+            ],
+            "foreignKeys": [],
+            "fields": [
+               {
+                  "name": "pk",
+                  "description": "BLA",
+                  "type": "integer",
+                  "isAbout": [],
+                  "valueReference": [],
+                  "unit": null
+               },
+               {
+                  "name": "vr",
+                  "description": "BLA",
+                  "type": "string",
+                  "isAbout": [],
+                  "valueReference": [],
+                  "unit": null
+               },
+               {
+                  "name": "planzeichen",
+                  "description": "BLA",
+                  "type": "string",
+                  "isAbout": [],
+                  "valueReference": [],
+                  "unit": null
+               },
+               {
+                  "name": "ebene",
+                  "description": "BLA",
+                  "type": "integer",
+                  "isAbout": [],
+                  "valueReference": [],
+                  "unit": null
+               },
+               {
+                  "name": "bezeich",
+                  "description": "BLA",
+                  "type": "string",
+                  "isAbout": [],
+                  "valueReference": [],
+                  "unit": null
+               },
+               {
+                  "name": "bezeich_2",
+                  "description": "BLA",
+                  "type": "string",
+                  "isAbout": [],
+                  "valueReference": [],
+                  "unit": null
+               },
+               {
+                  "name": "bezeich_3",
+                  "description": "BLA",
+                  "type": "string",
+                  "isAbout": [],
+                  "valueReference": [],
+                  "unit": null
+               },
+               {
+                  "name": "bezeich_4",
+                  "description": "BLA",
+                  "type": "string",
+                  "isAbout": [],
+                  "valueReference": [],
+                  "unit": null
+               },
+               {
+                  "name": "plan_status",
+                  "description": "BLA",
+                  "type": "string",
+                  "isAbout": [],
+                  "valueReference": [],
+                  "unit": null
+               },
+               {
+                  "name": "d_beschluss",
+                  "description": "BLA",
+                  "type": "date",
+                  "isAbout": [],
+                  "valueReference": [],
+                  "unit": null
+               },
+               {
+                  "name": "d_genehmigung",
+                  "description": "BLA",
+                  "type": "date",
+                  "isAbout": [],
+                  "valueReference": [],
+                  "unit": null
+               },
+               {
+                  "name": "d_inkraft",
+                  "description": "BLA",
+                  "type": "date",
+                  "isAbout": [],
+                  "valueReference": [],
+                  "unit": null
+               },
+               {
+                  "name": "geometry",
+                  "description": "BLA",
+                  "type": "geometry",
+                  "isAbout": [],
+                  "valueReference": [],
+                  "unit": null
+               }
+            ]
+         }
+      },
+      {
+         "profile": null,
+         "name": "stp_2018_vreg",
+         "path": "stp_2018_vreg.gpkg",
+         "format": "gpkg",
+         "encoding": "utf-8",
+         "schema": {
+            "primaryKey": [
+               "id"
+            ],
+            "foreignKeys": [],
+            "fields": [
+               {
+                  "name": "pk",
+                  "description": "BLA",
+                  "type": "integer",
+                  "isAbout": [],
+                  "valueReference": [],
+                  "unit": null
+               },
+               {
+                  "name": "vr",
+                  "description": "BLA",
+                  "type": "string",
+                  "isAbout": [],
+                  "valueReference": [],
+                  "unit": null
+               },
+               {
+                  "name": "planzeichen",
+                  "description": "BLA",
+                  "type": "string",
+                  "isAbout": [],
+                  "valueReference": [],
+                  "unit": null
+               },
+               {
+                  "name": "ebene",
+                  "description": "BLA",
+                  "type": "integer",
+                  "isAbout": [],
+                  "valueReference": [],
+                  "unit": null
+               },
+               {
+                  "name": "bezeich",
+                  "description": "BLA",
+                  "type": "string",
+                  "isAbout": [],
+                  "valueReference": [],
+                  "unit": null
+               },
+               {
+                  "name": "bezeich_2",
+                  "description": "BLA",
+                  "type": "string",
+                  "isAbout": [],
+                  "valueReference": [],
+                  "unit": null
+               },
+               {
+                  "name": "bezeich_3",
+                  "description": "BLA",
+                  "type": "string",
+                  "isAbout": [],
+                  "valueReference": [],
+                  "unit": null
+               },
+               {
+                  "name": "bezeich_4",
+                  "description": "BLA",
+                  "type": "string",
+                  "isAbout": [],
+                  "valueReference": [],
+                  "unit": null
+               },
+               {
+                  "name": "plan_status",
+                  "description": "BLA",
+                  "type": "string",
+                  "isAbout": [],
+                  "valueReference": [],
+                  "unit": null
+               },
+               {
+                  "name": "d_beschluss",
+                  "description": "BLA",
+                  "type": "date",
+                  "isAbout": [],
+                  "valueReference": [],
+                  "unit": null
+               },
+               {
+                  "name": "d_genehmigung",
+                  "description": "BLA",
+                  "type": "date",
+                  "isAbout": [],
+                  "valueReference": [],
+                  "unit": null
+               },
+               {
+                  "name": "d_inkraft",
+                  "description": "BLA",
+                  "type": "date",
+                  "isAbout": [],
+                  "valueReference": [],
+                  "unit": null
+               },
+               {
+                  "name": "area",
+                  "description": "BLA",
+                  "type": "decimal",
+                  "isAbout": [],
+                  "valueReference": [],
+                  "unit": null
+               },
+               {
+                  "name": "geometry",
+                  "description": "BLA",
+                  "type": "geometry",
+                  "isAbout": [],
+                  "valueReference": [],
+                  "unit": null
+               }
+            ]
+         }
+      }
+   ],
+   "@id": null,
+   "@context": "https://raw.githubusercontent.com/OpenEnergyPlatform/oemetadata/develop/metadata/latest/context.json",
+   "review": {
+      "path": "",
+      "badge": ""
+   },
+   "metaMetadata": {
+      "metadataVersion": "OEP-1.5.2",
+      "metadataLicense": {
+         "name": "CC0-1.0",
+         "title": "Creative Commons Zero v1.0 Universal",
+         "path": "https://creativecommons.org/publicdomain/zero/1.0/"
+      }
+   },
+   "_comment": {
+      "metadata": "Metadata documentation and explanation (https://github.com/OpenEnergyPlatform/oemetadata)",
+      "dates": "Dates and time must follow the ISO8601 including time zone (YYYY-MM-DD or YYYY-MM-DDThh:mm:ss±hh)",
+      "units": "Use a space between numbers and units (100 m)",
+      "languages": "Languages must follow the IETF (BCP47) format (en-GB, en-US, de-DE)",
+      "licenses": "License name must follow the SPDX License List (https://spdx.org/licenses/)",
+      "review": "Following the OEP Data Review (https://github.com/OpenEnergyPlatform/data-preprocessing/blob/master/data-review/manual/review_manual.md)",
+      "null": "If not applicable use: null",
+      "todo": "If a value is not yet available, use: todo"
+   }
+}
