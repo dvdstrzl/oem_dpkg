@@ -1,5 +1,5 @@
 import click
-from oep_datahandler import OEPDataHandler
+from oep_uploadhandler import OepUploadHandler
 from oem_datapackage import OemDataPackage
 
 
@@ -10,8 +10,9 @@ This script provides a CLI (Command Line Interface) for managing and uploading d
 - The 'oep-upload' command uploads data for a given dataset to the OEP database, requiring the path to the 'datapackage.json', the dataset name, and optionally the schema to be used.
 
 Example calls:
-oemdp create-package "input/path" "output/path" "name" "description" "version" --oem
-oemdp oep-upload "path/to/datapackage.json" "dataset_name" --schema "model_draft"
+oem_dpkg create-package "input/path" "output/path" "name" "description" "version" --oem
+
+oem_dpkg oep-upload "/path/to/datapackage.json" --dataset_selection "dataset1" --dataset_selection "dataset2" --schema "model_draft"
 """
 
 
@@ -43,6 +44,7 @@ def create_package(input_path, output_path, name, description, version, oem):
 @click.option(
     "--dataset_selection",
     default=None,
+    multiple=True,
     help="list of dataset names to handle. If not provided, all datasets in the datapackage will be processed.",
 )
 @click.option(
@@ -50,10 +52,13 @@ def create_package(input_path, output_path, name, description, version, oem):
 )
 def oep_upload(datapackage_path, dataset_selection, schema):
     """Uploads data to the OEP database. If dataset selection is given, only those are handled; otherwise, all datasets in the datapackage are processed."""
-    handler = OEPDataHandler(
+    dataset_selection_list = (
+        list(dataset_selection) if dataset_selection else None
+    )
+    handler = OepUploadHandler(
         datapackage_path=datapackage_path,
         oep_schema=schema,
-        dataset_selection=[dataset_selection] if dataset_selection else None,
+        dataset_selection=dataset_selection_list,
     )
     handler.run_all()
 

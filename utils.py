@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Any, Dict, List
 import fiona
 import json
-
 import pandas as pd
 import geopandas as gpd
 

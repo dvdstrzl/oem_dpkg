@@ -17,9 +17,9 @@ import oedialect
 logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
 
 
-class OEPDataHandler:
+class OepUploadHandler:
     """
-    Handles the preparation and uploading of datasets and metadata of a provided data package (OemDataPackage) to the Open Energy Platform (OEP).
+    Handles the preparation and uploading of datasets and metadata of a provided data package (OemDataPackage) to the Open Energy Platform (OEP) via OEP Database API.
 
     This class manages the process from reading the Frictionless data package (OemDataPackage),
     selecting specific datasets for creating the tables if necessary, and performing the dataset upload operations (in batches).
@@ -364,15 +364,15 @@ class OEPDataHandler:
 
 # ------------------------------------------------------------------------------
 # # Example usage
-# oep_datahandler = OEPDataHandler(
+# oep_uploadhandler = OepUploadHandler(
 #     datapackage_path="output/LATEST/datapackage",
 #     # dataset_selection=["rpg_abw_regional_plan"],
 #     # dataset_selection=["renewables_ninja_feedin"],
 #     api_token="0c9889067a4eafa692e433de3ea67acca51510ec",
 #     oep_username="davidst",
 # )
-# oep_datahandler.run_all()
-# # oep_datahandler.setup_db_connection()
-# # oep_datahandler.update_oep_metadata(
+# oep_uploadhandler.run_all()
+# # oep_uploadhandler.setup_db_connection()
+# # oep_uploadhandler.update_oep_metadata(
 # #     "rpg_abw_regional_plan/metadata.json", "stp_2018_vreg"
 # # )
