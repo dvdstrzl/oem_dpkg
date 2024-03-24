@@ -1,4 +1,5 @@
 import logging
+import re
 from typing import List, Union
 from pathlib import Path
 from frictionless import Package, Resource
@@ -63,7 +64,7 @@ class OemDataPackage:
         """
         self.input_path: Path = Path(input_path)
         self.output_path: Path = Path(output_path) / "datapackage"
-        self.name: str = name
+        self.name: str = self.adjust_name_to_pattern(name)
         self.description: str = description
         self.version: str = version
         self.created_date: datetime = datetime.now(timezone.utc)
@@ -214,6 +215,17 @@ class OemDataPackage:
         else:
             return True
 
+    def adjust_name_to_pattern(self, name):
+        """
+        Adjusts the name to match the pattern '^([-a-z0-9._/])+$' by removing non-conforming characters.
+        """
+        adjusted_name = re.sub(r"[^-a-z0-9._/]", "", name.lower())
+        if adjusted_name != name:
+            logging.info(
+                f"Name of data package was adjusted to '{adjusted_name}' to conform to Frictionless specifications."
+            )
+        return adjusted_name
+
     def create_package(self) -> None:
         """
         Finalizes the creation of the data package by creating the 'datapackage.json' file with all resources and metadata,
@@ -233,7 +245,7 @@ class OemDataPackage:
             self.make_paths_relative(package, self.output_path)
             package.to_json(str(self.output_path / "datapackage.json"))
             logging.info(
-                f"Data package successfully created @ '{self.output_path}/'"
+                f"Data package successfully created: '{self.output_path}/'"
             )
         except Exception as e:
             logging.error(f"Could not create data package!\n{e}")

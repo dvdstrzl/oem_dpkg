@@ -55,10 +55,6 @@ def find_files(
     return found_files
 
 
-# def find_metadata_json_files(start_path):
-#     return list(find_files(start_path, ignore_exts=[], ignore_files=[], specific_files=['metadata.json']))
-
-
 def find_metadata_json_files(start_path: str) -> List[str]:
     """
     Finds and returns a list of paths to 'metadata.json' files within the given directory.
@@ -101,7 +97,10 @@ def get_metadata_from_gpkg(gpkg_path: str) -> Dict[str, Any]:
         bbox = src.bounds
         # Extract schema information (fields and their data types)
         fields = [
-            {"name": field[0], "type": convert_dtype_to_frictionless_type(field[1])}
+            {
+                "name": field[0],
+                "type": convert_dtype_to_frictionless_type(field[1]),
+            }
             for field in src.schema["properties"].items()
         ]
 
@@ -139,9 +138,7 @@ def convert_dtype_to_frictionless_type(dtype: str) -> str:
         "bool": "boolean",
         # Add other mappings if needed
     }
-    return type_mapping.get(
-        dtype.lower(), "string"
-    )  
+    return type_mapping.get(dtype.lower(), "string")
 
 
 def load_json(path: str) -> Any:

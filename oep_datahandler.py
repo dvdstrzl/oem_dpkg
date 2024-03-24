@@ -191,6 +191,9 @@ class OEPDataHandler:
             )
 
             if table_name not in self.resources_ignore_list:
+                self.update_oep_metadata(
+                    resource.custom["oem_path"], table_name
+                )
                 if resource.format == "csv":
                     data_to_insert = prepare_csv_data(resource_abs_path)
                 elif resource.format == "json":
@@ -221,9 +224,7 @@ class OEPDataHandler:
                             logging.error(
                                 f"Failed to upload batch for {resource.name}. Error: {e}"
                             )
-                self.update_oep_metadata(
-                    resource.custom["oem_path"], table_name
-                )
+        logging.info("Finished uploading.")
 
     def prepare_oep_tables(self, datapackage_path):
         """
