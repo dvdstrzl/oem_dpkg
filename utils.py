@@ -115,7 +115,7 @@ def get_metadata_from_gpkg(gpkg_path: str) -> Dict[str, Any]:
 
 def convert_dtype_to_frictionless_type(dtype: str) -> str:
     """
-    Converts GDAL/OGR data types to Frictionless Field types.
+    Converts GDAL/OGR data types to Field types supported in Frictionless framework.
 
     Parameters:
     - dtype (str): The data type returned by GDAL/OGR.
@@ -137,11 +137,11 @@ def convert_dtype_to_frictionless_type(dtype: str) -> str:
         "time": "time",
         "boolean": "boolean",
         "bool": "boolean",
-        # Weitere Typen nach Bedarf hinzufügen
+        # Add other mappings if needed
     }
     return type_mapping.get(
         dtype.lower(), "string"
-    )  # Standardmäßig 'any' zurückgeben, falls Typ nicht gefunden wird
+    )  
 
 
 def load_json(path: str) -> Any:
