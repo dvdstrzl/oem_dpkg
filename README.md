@@ -178,7 +178,7 @@ oem_dpkg create-package <input_path> <output_path> <name> <description> <version
 To upload your prepared data package to the Open Energy Platform, use:
 
 ```bash
-oem_dpkg oep-upload <datapackage_path> [dataset_name] --schema <schema_name>
+oem_dpkg oep-upload <datapackage_path> --dataset_selection <dataset_name> --schema <schema_name>
 ```
 
 The `dataset_selection` argument is optional; if not provided, all datasets within the data package will be processed.
