@@ -368,8 +368,8 @@ class OepUploadHandler:
 #     datapackage_path="output/LATEST/datapackage",
 #     # dataset_selection=["rpg_abw_regional_plan"],
 #     # dataset_selection=["renewables_ninja_feedin"],
-#     api_token="0c9889067a4eafa692e433de3ea67acca51510ec",
-#     oep_username="davidst",
+#     api_token="",
+#     oep_username="",
 # )
 # oep_uploadhandler.run_all()
 # # oep_uploadhandler.setup_db_connection()

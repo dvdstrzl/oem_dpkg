@@ -47,7 +47,7 @@ The `OEMDataPackage` class is designed to streamline the creation, validation, a
 1. **Initialize**: Specify the input directory containing datasets and metadata, the output directory for the data package, package name, description, version, and whether to enable OEM integration.
 
 ```python
-from oem_datapackage import OemDataPackage
+from oem_dpkg import OemDataPackage
 
 package = OemDataPackage(
     input_path="/path/to/datasets",
@@ -96,7 +96,7 @@ Before using `OepUploadHandler`, ensure you have:
 1. **Initialize**: To begin, instantiate the `OepUploadHandler` class with the path to your data package, your OEP API token, and other relevant information:
 
 ```python
-from oep_uploadhandler import OepUploadHandler
+from oem_dpkg import OepUploadHandler
 
 upload_handler = OepUploadHandler(
     datapackage_path="path/to/your/datapackage.json",
@@ -178,7 +178,7 @@ oem_dpkg create-package <input_path> <output_path> <name> <description> <version
 To upload your prepared data package to the Open Energy Platform, use:
 
 ```bash
-oem_dpkg oep-upload <datapackage_path> [dataset_name] --schema <schema_name>
+oem_dpkg oep-upload <datapackage_path> --dataset_selection <dataset_name> --schema <schema_name>
 ```
 
 The `dataset_selection` argument is optional; if not provided, all datasets within the data package will be processed.
