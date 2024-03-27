@@ -2,7 +2,12 @@
   "name": "example_oem_data_package",
   "description": "Example description",
   "contributors": [
-    "dvdstrzl"
+    {
+      "title": "Example Name",
+      "email": "example@example.example",
+      "organization": "example",
+      "role": "example"
+    }
   ],
   "keywords": [
     "Example",

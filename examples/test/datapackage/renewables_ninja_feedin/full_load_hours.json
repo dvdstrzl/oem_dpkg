@@ -1,0 +1,22 @@
+[
+    {
+        "category": "wind",
+        "year_2022": 1800,
+        "year_2045": 2300
+    },
+    {
+        "category": "pv",
+        "year_2022": 1000,
+        "year_2045": 1000
+    },
+    {
+        "category": "st",
+        "year_2022": 1,
+        "year_2045": 1
+    },
+    {
+        "category": "ror",
+        "year_2022": 3800,
+        "year_2045": 3800
+    }
+]
