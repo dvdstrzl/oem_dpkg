@@ -1,6 +1,5 @@
 # Files
 IGNORE/*
-output/*
 
 .vscode/*
 !.vscode/settings.json
