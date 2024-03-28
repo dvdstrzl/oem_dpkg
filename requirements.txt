@@ -2,6 +2,7 @@ attrs==23.2.0
 click==8.1.7
 fiona==1.9.5
 frictionless==5.16.1
+pandas==2.2.1
 geopandas==0.13.2
 oedialect==0.0.9
 oem2orm==0.3.2
